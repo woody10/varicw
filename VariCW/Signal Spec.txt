@@ -1,0 +1,296 @@
+NOTE: Updates are flagged by [v:local time date mmdd optional comment]
+LATEST REV DATE:  20150827
+
+VariCW SPECIFICATION
+
+- Has four operating modes
+	1. Basic mode has no correction but flags the user if errors are
+	   detected.
+
+	2. Manual correction mode flags the user if errors are detected
+	   and allows the user to request retransmission of the message. 
+
+	3. Auto mode automatically request retransmission when an error
+	   is detected.
+
+	4. "Last ditch" mode can be invoked after a poor link quality
+	   message is displayed in manual and retransmission requests 
+	   will continue until 1 element time has exceeded 1 second.
+
+	5. The user can change modes after the end of each transmission.
+
+
+[v:1514 0827]
+- Uses modified DFCW (Dual Frequency CW)
+	1. Center frequency, i.e. carrier, is on for 1 element time 
+	   between characters.
+
+	2. Dots are shifted 25 hertz below the carrier and remain on 
+	   til all dots have been sent.
+
+	3. Dashes are shifted 25 hertz above the carrier and remain on
+	   til all dashes have been sent.
+
+	4. International Morse Code will be used to encode characters.
+
+	5. Element time varies with link quality. The poorer the link,
+	   indicated by mismatched CRC's, the longer each element is
+	   transmitted.
+
+	6. After a retransmission requests has been made a "poor link
+	   quality" message will be displayed. 
+
+	7. In manual mode the user can continue to retry or discontinue
+	   the contact. In automatic mode the retries will continue
+	   until contact is re-established or the 1 element time has
+	   exceeded 1 second.
+
+
+[v:1248 0818]
+[v:1329 0827]
+[v:1347 0827]
+- Each message has header and footer made up of CRC sum
+	1. A sum of CRC's for the message is sent at the beginning, header
+	   and end, footer, of each message for link quality calculations.
+
+	2. EAx is used to seed with the first character of the
+	   message. The resulting number is then used as seed for the
+	   next character so on and so on each succeeding character
+	   until either the end of the message or EOT is set.
+
+	3. A message will contain 255 characters, not including header and 
+	   footer, or less depending on when EOT is set.
+
+
+	4. CRC will be 8 bits to assure that there will not be two 
+	   different messages with the same CRC.
+
+
+[v:2106 0827]
+[v:1532 0827]
+- Speed varies based on link quality calculation
+	1. When a message is completely received the message CRC and 
+	   calculated CRC are compaired. If CRC's are the same the 
+	   message is sent to stdout. If an error is detected
+	   (CRC's don't match), it is handled according to the current
+	   operating mode.
+
+	2. If retransmission is requested, the character transmission
+	   speed is reduced 10% from the previous transmission and the 
+	   message is resent. This means that the transmission speed 
+	   for each message must be saved at both the transmitting end 
+	   and the receiving end. 
+
+	3. In automode if three messages are sent without out error the
+	   transmission speed is increased by 5% for each new message 
+	   until errors are detected. The transmission speed will then 
+	   be reduced by 10% and the transmission speed will remain the
+	   same for the next 10 messages before an attempt to increase
+	   the transmission speed will begin again. If errors are 
+	   detected during the 10 message count retransmission is 
+	   requested and the 10 message count is reset to 0.
+
+	4. Retransmission requests are suspended after 10 retries and a
+	   poor link quality message is sent to stdout. "Last ditch"
+	   mode may be invoked at this time.
+
+	5. The first transmission in a QSO will begin at a speed 
+	   approximately equivalent to 50 wpm. Transmission speed will
+	   then increase or decrease based on error detection.
+	
+[v:1619 0827]
+[v:0734 0818]
+- Frame definition 
+	|BOT: 2 second carrier followed by characters '-...--'
+	| begin message	'-...--' 
+	| CRC sum 
+	| message body (max 255) 
+	| end of message '--...-'
+		.
+		.
+		.
+	| begin message'-...--' 
+	| CRC sum 
+	| message body (max 255) 
+	| end of message '--...-'
+		.
+		.
+		.
+	(continue until EOT flag is set)
+		.
+		.
+		.
+	| begin nth message'-...--' 
+	| CRC sum 
+	| message body (max 255) 
+	| end of message '--...-'
+	| EOT: characters 'eot' followed by 2 second carrier
+
+	NOTE: If EOT flag happens to be set and there are no more
+		characters to be transmitted place three spaces in the
+		message area to create a last message.
+
+
+[v:1549 0827]
+[v:0735 0820]
+- Retransmission protocol 
+	1. Receiving station sends |BOT|AF|CRC|etetetet|AE|EOT| with
+	   speed 10% slower then the speed of the transmission just 
+	   received with errors. 
+
+	2. Transmitting station will resend same message 10% slower 
+	   then the previous transmission matching the resend request's
+	   speed.
+
+	3. If the resend request fails to be heard by the transmitting
+	   station, another request is sent 10% slower then the 
+	   previous resend request. This will continue until the 
+	   transmission is resent or 10 resend requests have been sent.
+	   A "Resend request failed. Link failure." message is sent to 
+	   sdtout.
+
+[v:1709 0827]
+[v:1322 0818]
+- Tone protocol
+	1. A dot or a dash has the same element time (length).
+
+	2. Multiple dots or dashes are determined by how long the tone
+	   is shifted below or above the carrier. Example: For the
+	   letter z, the tone would be shifted above the carrier for 2
+	   element times then immediately shifted below the carrier for
+	   2 element times then returned to the carrier frequency. 
+	   NOTE: Letter z is dash dash dot dot.
+
+	3. The z is followed by the carrier frequency for 1 element 
+	   time. 
+
+	5. The carrier tone will be 1200 Hz. A dot tone will be 1175 Hz
+	   while a dash tone will be 1225 Hz.
+
+	6. End of word character is .-.-..
+
+[v:1634 0827]
+- Incoming message protocol
+	1. BOT detected.
+
+	2. Beginning of message (BOM) is detected store the next 16
+	   bits in the CRC register.
+
+	3. Calculate CRC as message arrives and store the next n bits
+	   of the massage until end of message (EOM) is detected.
+ 
+	4. Compare transmitted CRC with calculated CRC and set CRC fail
+	   flag as required.
+
+	5. Repeat 2, 3, 4 until EOT is detected.
+
+	6. Check failed CRC flag. In automatic mode if CRC fail is true
+	   request retransmition. In other modes send message to stdout
+	   and notify user of poor link quality. 
+
+	7. In manual mode check for user retransmission request.
+
+
+[v:2245 0827]
+- Outgoing message protocol
+
+	1. Outgoing message will not be transmitted until the number of
+	   characters reaches 255 or the end of transmission flag is
+	   detected.
+
+	2. If end of transmission flag is detected and there are no
+	   more characters in the out going character buffer 3 end of
+	   word characters will be placed in the out going character
+	   buffer and the buffer will be sent.
+
+
+[v:2202 0827]
+- Character set
+
+Character	Code	
+A		·-				
+B		-···					
+C		-·-·				
+D		-··			
+E		·				
+F		··-·				
+G		--·				
+H		····				
+I		··				
+J		·---	
+K		-·-	
+L		·-··		
+M		--		
+N		-·	
+O		---	
+P		·--·	
+Q		--·-	
+R		·-·	
+S		···
+T		-
+U		··-
+V		···-	
+W		·--	
+X		-··-	
+Y		-·--	
+Z		--··	
+
+0		-----
+1		·----						
+2		··---
+3		···--
+4		····-
+5		·····
+6		-····
+7		--···
+8		---··
+9		----·
+
+:		---···
+.		·-·-·-
+,		--··--		
+?		··--··		
+' (single quote)·----·		
+!		-·-·--		
+/		-··-·		
+(		-·--·		
+)		-·--·-		
+&		·-···		
+;		-·-·-·
+=		-···-
++		·-·-·
+- (dash/minus)	-····-
+_ (underscore)	··--·-
+" (double quote)·-··-·
+$		···-··-
+@		·--·-·
+                          ___
+BOT		-...---- (bot)
+                         ____
+EOT		.----.- (eota)
+                        __
+BOM		-...-- (bm)
+                        __
+EOM		--...- (gu)
+                       __
+End of word    .-.-.. (rd)
+
+----------------------------------------------------
+REVISION HISTORY
+
+v:0734 0818 BOT EOT changed
+v:0735 0820 added retransmission protocol
+v:1248 0818 added CRC parameter
+v:1322 0818 added tone protocol
+v:1329 0827 added details to CRC calculation
+V:1347 0827 CRC size changed to 8 bits collisions between message
+		irrelevant
+v:1514 0827 Dot dash frequency reversed.
+v:1532 0827 Clarification
+v:1549 0827 Clarification
+v:1619 0827 Clarification
+v:1634 0827 Added Incoming message protocol
+v:1709 0827 Added tone frequency definitions
+v:2106 0827 Change to CRC handling
+v:2202 0827 Added character set (morse code)
+v:2245 0827 Added outgoing message protocol

@@ -1,0 +1,6 @@
+NOTE: Updates are flagged by [v:local time date mmdd optional comment]
+
+
+VariCW User Interface
+
+
