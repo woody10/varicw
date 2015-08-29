@@ -1,7 +1,7 @@
-NOTE: Updates are flagged by [v:local time date mmdd optional comment]
-LATEST REV DATE:  20150827
 
-VariCW SPECIFICATION
+
+			VariCW SPECIFICATION
+
 
 - Has four operating modes
 	1. Basic mode has no correction but flags the user if errors are
@@ -20,7 +20,7 @@ VariCW SPECIFICATION
 	5. The user can change modes after the end of each transmission.
 
 
-[v:1514 0827]
+
 - Uses modified DFCW (Dual Frequency CW)
 	1. Center frequency, i.e. carrier, is on for 1 element time 
 	   between characters.
@@ -46,9 +46,7 @@ VariCW SPECIFICATION
 	   exceeded 1 second.
 
 
-[v:1248 0818]
-[v:1329 0827]
-[v:1347 0827]
+
 - Each message has header and footer made up of CRC sum
 	1. A sum of CRC's for the message is sent at the beginning, header
 	   and end, footer, of each message for link quality calculations.
@@ -66,8 +64,7 @@ VariCW SPECIFICATION
 	   different messages with the same CRC.
 
 
-[v:2106 0827]
-[v:1532 0827]
+
 - Speed varies based on link quality calculation
 	1. When a message is completely received the message CRC and 
 	   calculated CRC are compaired. If CRC's are the same the 
@@ -97,9 +94,9 @@ VariCW SPECIFICATION
 	5. The first transmission in a QSO will begin at a speed 
 	   approximately equivalent to 50 wpm. Transmission speed will
 	   then increase or decrease based on error detection.
-	
-[v:1619 0827]
-[v:0734 0818]
+
+
+
 - Frame definition 
 	|BOT: 2 second carrier followed by characters '-...--'
 	| begin message	'-...--' 
@@ -131,8 +128,7 @@ VariCW SPECIFICATION
 		message area to create a last message.
 
 
-[v:1549 0827]
-[v:0735 0820]
+
 - Retransmission protocol 
 	1. Receiving station sends |BOT|AF|CRC|etetetet|AE|EOT| with
 	   speed 10% slower then the speed of the transmission just 
@@ -149,8 +145,8 @@ VariCW SPECIFICATION
 	   A "Resend request failed. Link failure." message is sent to 
 	   sdtout.
 
-[v:1709 0827]
-[v:1322 0818]
+
+
 - Tone protocol
 	1. A dot or a dash has the same element time (length).
 
@@ -169,7 +165,8 @@ VariCW SPECIFICATION
 
 	6. End of word character is .-.-..
 
-[v:1634 0827]
+
+
 - Incoming message protocol
 	1. BOT detected.
 
@@ -191,7 +188,7 @@ VariCW SPECIFICATION
 	7. In manual mode check for user retransmission request.
 
 
-[v:2245 0827]
+
 - Outgoing message protocol
 
 	1. Outgoing message will not be transmitted until the number of
@@ -204,7 +201,7 @@ VariCW SPECIFICATION
 	   buffer and the buffer will be sent.
 
 
-[v:2202 0827]
+
 - Character set
 
 Character	Code	
@@ -275,22 +272,3 @@ EOM		--...- (gu)
                        __
 End of word    .-.-.. (rd)
 
-----------------------------------------------------
-REVISION HISTORY
-
-v:0734 0818 BOT EOT changed
-v:0735 0820 added retransmission protocol
-v:1248 0818 added CRC parameter
-v:1322 0818 added tone protocol
-v:1329 0827 added details to CRC calculation
-V:1347 0827 CRC size changed to 8 bits collisions between message
-		irrelevant
-v:1514 0827 Dot dash frequency reversed.
-v:1532 0827 Clarification
-v:1549 0827 Clarification
-v:1619 0827 Clarification
-v:1634 0827 Added Incoming message protocol
-v:1709 0827 Added tone frequency definitions
-v:2106 0827 Change to CRC handling
-v:2202 0827 Added character set (morse code)
-v:2245 0827 Added outgoing message protocol
