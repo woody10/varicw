@@ -1,42 +1,44 @@
 
+	 			  VariCW SPECIFICATION
 
-			VariCW SPECIFICATION
 
+- Has three operating modes
 
-- Has four operating modes
-	1. Basic mode has no correction but flags the user if errors are detected.
-
-	2. Manual correction mode flags the user if errors are detected and allows the user to request retransmission of the message. 
+	1. Basic mode flags the user if errors are detected and allows the user to request retransmission of the message if desired. 
 
 	3. Auto mode automatically request retransmission when an error is detected.
 
-	4. "Last ditch" mode can be invoked after a poor link quality message is displayed in manual and retransmission requests will continue until 1 element time has exceeded 1 second.
+	4. "Last ditch" mode can be invoked after a poor link quality message is displayed. Retransmission requests will continue until 1 element time has exceeded 1 second then "link lost" message will be sent out stdout.
 
-	5. The user can change modes after the end of each transmission.
+	5. The user may change modes after the end of each transmission.
 
 
 
 - Uses modified DFCW (Dual Frequency CW)
-	1. Center frequency, i.e. carrier, is on for 1 element time    between characters.
+
+	1. Center frequency, i.e. carrier, is on for 1 element time    between characters and 3 element times for SPACE character.
 
 	2. Dots are shifted 25 hertz below the carrier and remain on    til all dots have been sent.
 
 	3. Dashes are shifted 25 hertz above the carrier and remain on til all dashes have been sent.
 
-	4. International Morse Code will be used to encode characters.
+	4. International Morse Code will be used to encode characters. Some special characters and controls differ. See Character set below.
 
-	5. Element time varies with link quality. The poorer the link, indicated by mismatched CRC's, the longer each element is	   transmitted.
+	5. Element time varies with link quality. The poorer the link, indicated by mismatched CRC's, the longer the element time becomes.
 
-	6. After a retransmission requests has been made a "poor link quality" message will be displayed. 
+	6. After a retransmission requests has been made a "adjusting speed" message will be sent to stdout. 
 
-	7. In manual mode the user can continue to retry or discontinue the contact. In automatic mode the retries will continue until contact is re-established or the 1 element time has exceeded 1 second.
+	7. In manual mode the user can continue to retry or discontinue the contact. If 1 element time exceeds 1 second "link lost" is sent to stdout. However, the user may continue to retry to establish the link but the 1 second element time will remain the same.
+
+	8. In automatic mode the retries will continue until contact is re-established or the 1 element time has exceeded 1 second. If 1 second element time is reached "link lost" message is sent to stdout and the retries will stop.
 
 
 
 - Each message has header and footer made up of CRC sum
+
 	1. A sum of CRC's for the message is sent at the beginning,    header and end, footer, of each message for link quality 		   calculations.
 
-	2. EAx is used to seed with the first character of the   message. The resulting number is then used as seed for the	   next character so on and so on each succeeding character	   until either the end of the message or EOT is set.
+	2. Hexidecimal EA is used to seed with the first character of the   message. The resulting number is then used as seed for the	   next character so on and so on each succeeding character	   until either the end of the message or EOT is set.
 
 	3. A message will contain 255 characters, not including header and footer, or less depending on when EOT is set.
 
@@ -46,37 +48,38 @@
 
 
 - Speed varies based on link quality calculation
+
 	1. When a message is completely received the message CRC and    calculated CRC are compaired. If CRC's are the same the message is sent to stdout. If an error is detected (CRC's don't match), it is handled according to the current operating mode.
 
 	2. If retransmission is requested, the character transmission speed is reduced 10% from the previous transmission and the message is resent. This means that the transmission speed    for each message must be saved at both the transmitting end 	   and the receiving end. 
 
-	3. In automode if three messages are sent without out error the transmission speed is increased by 5% for each new message  until errors are detected. The transmission speed will then be reduced by 10% and the transmission speed will remain the same for the next 10 messages before an attempt to increase	 the transmission speed will begin again. If errors are detected during the 10 message count retransmission is requested and the 10 message count is reset to 0.
+	3. In automode if three messages are sent without out error the transmission speed is increased by 5% for each new message  until errors are detected. The transmission speed will then be reduced by 10% and the transmission speed will remain the same for the next 10 messages before an attempt to increase	 the transmission speed will begin again. If errors are detected during the 10 message count retransmission is requested and the 10 message counter is reset to 0 and the count is resumed.
 
-	4. Retransmission requests are suspended after 10 retries and a poor link quality message is sent to stdout. "Last ditch"	   mode may be invoked at this time.
-
-	5. The first transmission in a QSO will begin at a speed 	   approximately equivalent to 50 wpm. Transmission speed will	   then increase or decrease based on error detection.
+	4. The first transmission in a QSO will begin at a speed 	   of 0.1 second per element time or 600 elements per minute. Transmission speed will then increase or decrease based on error detection as described above.
 
 
 
 - Frame definition 
-	|BOT: 2 second carrier followed by characters BOT 'etetetet'
-	| begin message	'-...--' 
-	| CRC sum 
-	| message body 
-	| EOT: characters 'eot' followed by 2 second carrier
+
+	BOT: 2 second carrier followed by BOT 
+	 begin message	'-...--' 
+	 CRC sum 
+	 message body 
+	 EOT: EOT followed by 2 second carrier
 
 
 
 - Request for retransmission protocol 
+
 	1. Receiving station sends |BOT|BOM|CRC|RETRANSMIT|EOM|EOT| with speed 10% slower then the speed of the transmission just 	   received with errors. 
 
 	2. Transmitting station will resend same message 10% slower    then the previous transmission matching the resend request's	   speed.
 
-	3. If the resend request fails to be heard by the transmitting station, another request is sent 10% slower then the    previous resend request. This will continue until the transmission is resent or 10 resend requests have been sent. A "Resend request failed. Link failure." message is sent to 	   sdtout.
-
+	3. If the resend request fails to be heard by the transmitting station, another request is sent 10% slower then the    previous resend request. This will continue until the element time is 1 second long. Also see Uses modified DFCW sections 7 & 8 for more details.
 
 
 - Tone protocol
+
 	1. A dot or a dash has the same element time (length).
 
 	2. Multiple dots or dashes are determined by how long the tone is shifted below or above the carrier. Example: For the	   letter z, the tone would be shifted above the carrier for 2	   element times then immediately shifted below the carrier for 2 element times then returned to the carrier frequency. 
@@ -91,6 +94,7 @@
 
 
 - Incoming message protocol
+
 	1. BOT detected.
 
 	2. Beginning of message (BOM) is detected store the next 4	   characters, the CRC register, as a hexidecimal number.
@@ -182,8 +186,8 @@ $		···-··-
 SPACE		minimum 3 ELEMENT TIMES
 
 BOT		etetetet (pseudo clock)
-
-EOT		eot
+                       _____
+EOT		.----.---- (eoteot)
                    __
 BOM		-...-- (bm)
                    __
