@@ -28,7 +28,7 @@
 
 	6. After a retransmission requests has been made a "adjusting speed" message will be sent to stdout. 
 
-	7. In manual mode the user can continue to retry or discontinue the contact. If 1 element time exceeds 1 second "link lost" is sent to stdout. However, the user may continue to retry to establish the link but the 1 second element time will remain the same.
+	7. In manual mode the user can continue to retry or discontinue the contact. If 1 element time exceeds 1 second "link lost" is sent to stdout. However, the user may continue to try to establish the link but the 1 second element time will remain the same.
 
 	8. In automatic mode the retries will continue until contact is re-established or the 1 element time has exceeded 1 second. If 1 second element time is reached "link lost" message is sent to stdout and the retries will stop.
 
@@ -36,79 +36,71 @@
 
 - Each message has header and footer made up of CRC sum
 
-	1. A sum of CRC's for the message is sent at the beginning,    header and end, footer, of each message for link quality 		   calculations.
+	1. A sum of CRC's for the message is sent at the beginning of each message for link quality calculations.
 
-	2. Hexidecimal EA is used to seed with the first character of the   message. The resulting number is then used as seed for the	   next character so on and so on each succeeding character	   until either the end of the message or EOT is set.
+	2. Hexidecimal EA is used to seed with the first character of the message. The resulting number is then used as seed for the next character so on and so on each succeeding character	   until either the end of the message.
 
-	3. A message will contain 255 characters, not including header and footer, or less depending on when EOT is set.
+	3. A message will contain the entire message until the end of transmission flag is set.
 
 
-	4. CRC will be 8 bits to assure that there will not be two 	   different messages with the same CRC.
+	4. CRC will be sent as 4 hex digits to assure that there will not be two different messages with the same CRC.
 
 
 
 - Speed varies based on link quality calculation
 
-	1. When a message is completely received the message CRC and    calculated CRC are compaired. If CRC's are the same the message is sent to stdout. If an error is detected (CRC's don't match), it is handled according to the current operating mode.
+	1. When as message is received the CRC is calculated. Once the message is complete the transmitted and the calculated CRCs are compaired. If CRCs are the same the message is consided error free. If an error is detected (CRC's don't match), it is handled according to the current operating mode. A "link error" message is sent to stdout.
 
-	2. If retransmission is requested, the character transmission speed is reduced 10% from the previous transmission and the message is resent. This means that the transmission speed    for each message must be saved at both the transmitting end 	   and the receiving end. 
+	2. If retransmission is requested, the element time is reduced 10% from the previous transmission and the message is resent. This means that the transmission speed for each message must be saved at both the transmitting end and the receiving end. 
 
-	3. In automode if three messages are sent without out error the transmission speed is increased by 5% for each new message  until errors are detected. The transmission speed will then be reduced by 10% and the transmission speed will remain the same for the next 10 messages before an attempt to increase	 the transmission speed will begin again. If errors are detected during the 10 message count retransmission is requested and the 10 message counter is reset to 0 and the count is resumed.
+	3. In automode if three messages are sent without out error the transmission speed is increased by 5%, ie the element time is shortened, for each new message until errors are detected. The transmission speed will then be reduced by 10% and the transmission speed will remain the same for the next 10 messages before an attempt to increase transmission speed will begin again. If errors are detected during the 10 message, the 10 message counter is reset to 0 and the count is resumed after an error free link has been established.
 
-	4. The first transmission in a QSO will begin at a speed 	   of 0.1 second per element time or 600 elements per minute. Transmission speed will then increase or decrease based on error detection as described above.
+	4. The first transmission in a QSO will begin at a speed 	   of 0.1 second per element time or 600 elements per minute. Transmission speed will then increase or decrease based on link quality as described above.
 
 
 
 - Frame definition 
 
-	BOT: 2 second carrier followed by BOT 
-	 begin message	'-...--' 
-	 CRC sum 
-	 message body 
-	 EOT: EOT followed by 2 second carrier
+	BOT:		2 second carrier followed by BOT 
+	BOM:		begin message	'-...--' 
+	text:		message body
+     checksum:	CRC sum 
+	EOT:		EOT character followed by 2 second carrier
 
 
 
 - Request for retransmission protocol 
 
-	1. Receiving station sends |BOT|BOM|CRC|RETRANSMIT|EOM|EOT| with speed 10% slower then the speed of the transmission just 	   received with errors. 
+	1. Receiving station sends BOT|BOM|RETRANSMIT|CRC|EOT| with speed 10% slower then the speed of the transmission just 	   received with errors. 
 
-	2. Transmitting station will resend same message 10% slower    then the previous transmission matching the resend request's	   speed.
+	2. Transmitting station will resend same message 10% slower then the previous transmission matching the resend request's speed.
 
 	3. If the resend request fails to be heard by the transmitting station, another request is sent 10% slower then the    previous resend request. This will continue until the element time is 1 second long. Also see Uses modified DFCW sections 7 & 8 for more details.
+
+	4. The transmitting station will maintain the last transmitted frame until the operator of the transmitting station intitates a new message.
 
 
 - Tone protocol
 
 	1. A dot or a dash has the same element time (length).
 
-	2. Multiple dots or dashes are determined by how long the tone is shifted below or above the carrier. Example: For the	   letter z, the tone would be shifted above the carrier for 2	   element times then immediately shifted below the carrier for 2 element times then returned to the carrier frequency. 
-	   NOTE: Letter z is dash dash dot dot.
+	2. Multiple dots or dashes are determined by how long the tone is shifted below or above the carrier. 
+Example: For the letter z, the tone would be shifted above the carrier for 2 element times then immediately shifted below the carrier for 2 element times then returned to the carrier frequency for at least one element time if a letter follows z. If z is the last letter in a word then SPACE will follow.
+NOTE: Letter z is dash dash dot dot.
 
-	3. The z is followed by the carrier frequency for 1 element    time. 
+	3. End of word character is 3 element times (SPACE).
 
-	5. The carrier tone will be 1200 Hz. A dot tone will be 1175 Hz while a dash tone will be 1225 Hz.
+	4. The carrier tone will be 1200 Hz. A dot tone will be 1175 Hz while a dash tone will be 1225 Hz.
 
-	6. End of word character is 3 element times (SPACE).
-
-
+	
 
 - Incoming message protocol
 
-	1. BOT detected.
+	1. After BOT and BOM have been detected they will be sent to stdout message window as well as each character of the message including the CRC and EOT characters.
 
-	2. Beginning of message (BOM) is detected store the next 4	   characters, the CRC register, as a hexidecimal number.
+	Example: <BOT><BOM>This is a test message.<01A7><EOT>
 
-	3. Calculate CRC as the message arrives and store the message until end of message (EOM) is detected.
- 
-	4. Compare transmitted CRC with calculated CRC and set CRC fail flag as required.
-
-	5. Repeat 2, 3, 4 until EOT is detected.
-
-	6. Check failed CRC flag. In automatic mode if CRC fail is true request retransmition. In other modes send message to stdout	   and notify user of poor link quality. 
-
-	7. In manual mode check for user retransmission request.
-
+	2. The result of the CRCs comparison is sent to stdout in a link quality window.
 
 
 - Outgoing message protocol
@@ -117,9 +109,9 @@
 
 	2. Transmission will continue until "end button" is activated.
 
-	3. Outgoing message my be composed before or during 	 	   transmission.
+	3. Outgoing message may be composed before transmission begins and during transmission.
 
-	4. A "dead man" timer will automatically end transmission if no new character are input to the transmit buffer after a period 	   of 5 minutes.
+	4. A "dead man" timer will automatically end transmission if no new character are input to the transmit buffer after a period of 5 minutes.
 
 
 
@@ -183,7 +175,7 @@ _ (underscore)	··--·-
 $		···-··-
 @		·--·-·
 
-SPACE		minimum 3 ELEMENT TIMES
+SPACE		 3 ELEMENT TIMES
 
 BOT		etetetet (pseudo clock)
                        _____
