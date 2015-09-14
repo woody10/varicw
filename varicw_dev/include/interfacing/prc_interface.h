@@ -7,6 +7,8 @@ author(s): Corbin Matschull
 maintainer(s): Dave Harris
 email(s): c.matschull@icloud.com, jushamn@readytek.net
 
+See § 1.2 for documentation on this file.
+
 -----------------------------------------------------------------------
 LICENSE (GNU):
 
@@ -21,23 +23,32 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 ==================================================================== */
-#ifndef TONE_H_
-#define TONE_H_
+#ifndef PRC_INTERFACE_H_
+#define PRC_INTERFACE_H_
 
-#include <math.h>
+    #ifdef RAD_HAS_NO_COMM
+    #   define  COMM_STRAT_PASS_BY_REFERENCE 1
+    #   define  COMM_DEF_HAS_NO_ARGUMENTS 1
+        int rad_val = 1;
+        static long INTER_UUID = 1UL;
+    #endif
 
-#   define  TONE_GEN_MID_POST 0
-#   define  TONE_GEN_MIN_POST (TONE_GEN_MID_POST - 50)
-#   define  TONE_GEN_MAX_POST (TONE_GEN_MID_POST + 50)
+    /*
+        Brief-
+            Passes command to current active COM interface
 
-#ifdef __TONE_STRICT_MODE__
-#endif
+        Params-
+            arg - argument number
+            *cmd[] - Command to pass to interface
 
-typedef struct
-{
-    unsigned int has_sent_tone;
-} tone_gen_recv;
+        Returns-
+            Nothing
+    */
+    void *pass_interface_command(int arg, char *cmd[]);
 
-
+    /*
+    
+    */
+    int *time_alive(float tla, char proc_code[]);
 
 #endif

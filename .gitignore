@@ -1,0 +1,9 @@
+# Ignore Visual Studio Project Files
+varicw_dev/varicw_dev.sdf
+varicw_dev/varicw_dev.sln
+varicw_dev/varicw_dev.vcxproj
+varicw_dev/varicw_dev.vcxproj.filters
+varicw_dev/varicw_dev.opensdf
+
+# Ignore Debug Folder for VS Project
+Debug/**/*
